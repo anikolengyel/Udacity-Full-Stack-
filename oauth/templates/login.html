@@ -1,0 +1,81 @@
+<html>
+<head>
+</head>
+<!--LOAD PRE-REQUISITES FOR GOOGLE SIGN IN -->
+ <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js">
+</script>
+
+<script src="//apis.google.com/js/platform.js?onload=start"> </script>
+
+<!-- END PRE-REQUISITES FOR GOOGLE SIGN IN -->
+
+<body>
+
+  <!-- GOOGLE PLUS SIGN IN BUTTON-->
+
+
+  <div id="signinButton">
+    <span class="g-signin"
+      data-scope="openid email"
+      data-clientid="YOUR_CLIENT_ID_GOES_HERE.apps.googleusercontent.com"
+      data-redirecturi="postmessage"
+      data-accesstype="offline"
+      data-cookiepolicy="single_host_origin"
+      data-callback="signInCallback"
+      data-approvalprompt="force">
+    </span>
+  </div>
+  <!--div tag to populate with the login result -->
+  <div id="result"></div>
+
+
+  <!--END GOOGLE PLUS SIGN IN BUTTON -->
+
+</body>
+
+<script>
+
+// function takes an authorization result
+function signInCallback(authResult) {
+  // if there is a result (authorization was successful)
+  if(authResult['code']) {
+      // hide the sign-in button now that the user is authorized
+      $('#signinButton').attr('style', 'display: none');
+      // sending the one-time-use code to the server,
+      $.ajax({
+        // specifying a post method
+          type: 'POST',
+          // the method will call the following url:
+          // passing the server state token as an argument
+          url: '/gconnect?state={{STATE}}',
+          // do not process the response into a string
+          processData: false,
+          contentType: 'application/octet-stream; charset=utf-8',
+          // specify the data to send to the server (one-time-use code)
+          data: authResult['code']
+          // if we receive a 200 or success response from the server
+          success: function(result) {
+            // return a successfull login message to the user
+            if (result) {
+              $('#result').html('Login successful </br>' + result
+              + '</br> Redirecting')
+              // redirect to the main restaurant postmessage
+              // after 4 seconds
+              setTimeout(function() {
+                window.location.href="/restaurant";
+              }, 4000);
+              // if the response is an error, return the error message
+          } else if (authResult['error']) {
+              console.log('There was an error: ' + authResult['error']);
+              // if there is no message
+          } else {
+            $('#result').html('Failed to make a server side call.')
+          }
+          }
+      })
+  }
+}
+
+</script>
+
+</html>
